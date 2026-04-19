@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhật ký - Trang chủ</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="logo">📔 Nhật ký của tôi</div>
+        <div class="nav">
+            <a href="index.html" class="btn-primary">🏠 Trang chủ</a>
+            <a href="add.html">✍️ Thêm nhật ký</a>
+            <span id="userEmail" style="font-size:0.8rem; background:#f0ede8; padding:0.3rem 0.8rem; border-radius:2rem;"></span>
+            <button id="logoutBtn">🚪 Đăng xuất</button>
+        </div>
+    </div>
+
+    <!-- Phần lời chào và thống kê -->
+    <div class="welcome-section" id="welcomeSection">
+        <div class="welcome-text">
+            <h2 id="greeting">Chào bạn!</h2>
+            <p id="diaryCountMsg">Đang tải...</p>
+        </div>
+        <div class="stats" id="statsBadge">📊</div>
+    </div>
+
+    <!-- Thanh lọc và tìm kiếm -->
+    <div class="filter-bar">
+        <button class="filter-btn active" data-emotion="all">📋 Tất cả</button>
+        <button class="filter-btn" data-emotion="vui">😊 Vui</button>
+        <button class="filter-btn" data-emotion="buồn">😢 Buồn</button>
+        <button class="filter-btn" data-emotion="bình thường">😐 Bình thường</button>
+        <button class="filter-btn" data-emotion="yêu">❤️ Yêu</button>
+        <button class="filter-btn" data-emotion="phấn khích">🤩 Phấn khích</button>
+        <button class="filter-btn" data-emotion="tức giận">😠 Tức giận</button>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm nội dung...">
+            <button id="searchBtn">Tìm</button>
+        </div>
+    </div>
+
+    <!-- Danh sách nhật ký -->
+    <h3>📖 Nhật ký gần đây</h3>
+    <div id="entriesList" class="diary-list">
+        <div class="empty-msg">⏳ Đang tải...</div>
+    </div>
+</div>
+
+<script type="module">
+    import { requireAuth, getCurrentUser, logout } from "./js/auth.js";
+    import { getDiaries, deleteDiary } from "./js/diary.js";
+    import { auth } from "./js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    requireAuth();
+    const userEmailSpan = document.getElementById("userEmail");
+    const entriesDiv = document.getElementById("entriesList");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const greetingEl = document.getElementById("greeting");
+    const diaryCountMsg = document.getElementById("diaryCountMsg");
+    const statsBadge = document.getElementById("statsBadge");
+
+    logoutBtn.onclick = () => logout();
+
+    let allDiaries = [];          // lưu toàn bộ nhật ký gốc
+    let currentFilter = "all";    // bộ lọc cảm xúc hiện tại
+    let currentSearch = "";        // từ khóa tìm kiếm
+
+    // Hàm lấy giờ từ timestamp (nếu có) hoặc dùng ngày hiện tại
+    function getTimeFromDiary(diary) {
+        if (diary.createdAt && diary.createdAt.toDate) {
+            const date = diary.createdAt.toDate();
+            return date.toLocaleTimeString("vi-VN", { hour: '2-digit', minute: '2-digit' });
+        }
+        return "";
+    }
+
+    // Hiển thị lời chào và thống kê
+    function updateWelcomeAndStats(diaries) {
+        const user = auth.currentUser;
+        if (!user) return;
+        const hour = new Date().getHours();
+        let greeting = "";
+        if (hour < 12) greeting = "Chào buổi sáng";
+        else if (hour < 18) greeting = "Chào buổi chiều";
+        else greeting = "Chào buổi tối";
+        greetingEl.innerHTML = `${greeting}, ${user.email.split('@')[0]}! 🌟`;
+        const count = diaries.length;
+        diaryCountMsg.innerHTML = `Bạn đã có <strong>${count}</strong> dòng nhật ký.`;
+        statsBadge.innerHTML = `📊 ${count} bài`;
+    }
+
+    // Lọc và tìm kiếm
+    function filterAndSearch() {
+        let filtered = [...allDiaries];
+        if (currentFilter !== "all") {
+            filtered = filtered.filter(d => d.emotion === currentFilter);
+        }
+        if (currentSearch.trim() !== "") {
+            const keyword = currentSearch.trim().toLowerCase();
+            filtered = filtered.filter(d => d.content.toLowerCase().includes(keyword));
+        }
+        renderDiaries(filtered);
+        updateWelcomeAndStats(allDiaries); // vẫn hiển thị tổng số
+        if (filtered.length === 0 && allDiaries.length > 0) {
+            entriesDiv.innerHTML = '<div class="no-results">😔 Không tìm thấy nhật ký phù hợp.</div>';
+        }
+    }
+
+    // Render danh sách nhật ký
+    function renderDiaries(diaries) {
+        if (diaries.length === 0 && allDiaries.length === 0) {
+            entriesDiv.innerHTML = '<div class="empty-msg">📭 Chưa có nhật ký nào. <a href="add.html" style="color:#b45f2b;">Thêm ngay</a>!</div>';
+            return;
+        }
+        if (diaries.length === 0 && allDiaries.length > 0) return; // đã xử lý ở filterAndSearch
+        let html = "";
+        for (const diary of diaries) {
+            let emotionDisplay = "";
+            let emotionIcon = "";
+            switch(diary.emotion) {
+                case 'vui': emotionDisplay = 'Vui vẻ'; emotionIcon = '😊'; break;
+                case 'buồn': emotionDisplay = 'Buồn'; emotionIcon = '😢'; break;
+                case 'bình thường': emotionDisplay = 'Bình thường'; emotionIcon = '😐'; break;
+                case 'yêu': emotionDisplay = 'Yêu thương'; emotionIcon = '❤️'; break;
+                case 'phấn khích': emotionDisplay = 'Phấn khích'; emotionIcon = '🤩'; break;
+                case 'tức giận': emotionDisplay = 'Tức giận'; emotionIcon = '😠'; break;
+                default: emotionDisplay = diary.emotion; emotionIcon = '📝';
+            }
+            const timeStr = getTimeFromDiary(diary);
+            html += `
+                <div class="entry-card">
+                    <div class="entry-header">
+                        <span>
+                            <span class="entry-emotion-icon">${emotionIcon}</span>
+                            📅 ${diary.date} ${timeStr ? `<span class="entry-time">⏰ ${timeStr}</span>` : ''}
+                        </span>
+                        <span class="entry-emotion">${emotionIcon} ${emotionDisplay}</span>
+                    </div>
+                    <div class="entry-content">${escapeHtml(diary.content).replace(/\n/g, '<br>')}</div>
+                    <div class="entry-actions">
+                        <a href="edit.html?id=${diary.id}" class="edit-btn">✏️ Sửa</a>
+                        <button class="delete-btn" data-id="${diary.id}">🗑️ Xóa</button>
+                    </div>
+                </div>
+            `;
+        }
+        entriesDiv.innerHTML = html;
+        // Gắn sự kiện xóa
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const id = btn.getAttribute('data-id');
+                if (confirm('Xóa nhật ký này?')) {
+                    await deleteDiary(id);
+                    loadDiaries();
+                }
+            });
+        });
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, (m) => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;'));
+    }
+
+    async function loadDiaries() {
+        const user = await getCurrentUser();
+        if (!user) return;
+        userEmailSpan.textContent = user.email;
+        try {
+            const diaries = await getDiaries(user.uid);
+            allDiaries = diaries;
+            updateWelcomeAndStats(allDiaries);
+            filterAndSearch(); // áp dụng bộ lọc và tìm kiếm hiện tại
+        } catch (err) {
+            entriesDiv.innerHTML = `<div class="empty-msg">⚠️ Lỗi: ${err.message}</div>`;
+        }
+    }
+
+    // Khởi tạo sự kiện cho bộ lọc và tìm kiếm
+    function initFilters() {
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.getAttribute('data-emotion');
+                filterAndSearch();
+            });
+        });
+        const searchBtn = document.getElementById('searchBtn');
+        const searchInput = document.getElementById('searchInput');
+        searchBtn.addEventListener('click', () => {
+            currentSearch = searchInput.value;
+            filterAndSearch();
+        });
+        searchInput.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                currentSearch = searchInput.value;
+                filterAndSearch();
+            }
+        });
+    }
+
+    loadDiaries();
+    onAuthStateChanged(auth, (user) => { if (user) loadDiaries(); });
+    // Đợi DOM load xong mới gán sự kiện filter
+    setTimeout(initFilters, 500);
+</script>
+</body>
+</html>
