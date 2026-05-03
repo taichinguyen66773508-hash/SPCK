@@ -94,7 +94,7 @@ body {
     max-width: 1000px;
     margin: 0 auto;
     background: var(--bg-container);
-    border-radius: 2.5rem;
+    border-radius: 12px;
     box-shadow: 0 20px 35px -12px var(--shadow);
     padding: 2rem;
 }
@@ -129,7 +129,7 @@ body {
 .nav a, .nav button {
     background: var(--bg-nav-btn);
     padding: 0.5rem 1.2rem;
-    border-radius: 2.5rem;
+    border-radius: 6px;
     text-decoration: none;
     color: var(--text-secondary);
     font-weight: 500;
@@ -155,7 +155,7 @@ body {
 
 .welcome-section {
     background: var(--bg-welcome);
-    border-radius: 10p;
+    border-radius: 10px;
     padding: 1.5rem 2rem;
     margin-bottom: 2rem;
     display: flex;
@@ -178,7 +178,7 @@ body {
 
 .stats {
     background: var(--bg-stats);
-    border-radius: 3rem;
+    border-radius: 6px;
     padding: 0.5rem 1.4rem;
     font-weight: 700;
     color: var(--accent);
@@ -192,14 +192,14 @@ body {
     align-items: center;
     background: var(--bg-filter);
     padding: 0.8rem 1.2rem;
-    border-radius: 3rem;
+    border-radius: 10px;
 }
 
 .filter-btn {
     background: var(--bg-filter-btn);
     border: none;
     padding: 0.45rem 1.2rem;
-    border-radius: 2rem;
+    border-radius: 6px;
     cursor: pointer;
     font-weight: 500;
     color: var(--text-secondary);
@@ -221,7 +221,7 @@ body {
 .search-box input {
     flex: 1;
     padding: 0.45rem 1rem;
-    border-radius: 2rem;
+    border-radius: 6px;
     border: 1px solid var(--border-search);
     outline: none;
     background: var(--bg-search-input);
@@ -232,14 +232,14 @@ body {
     background: var(--accent);
     color: white;
     border: none;
-    border-radius: 2rem;
+    border-radius: 6px;
     padding: 0.45rem 1.2rem;
     cursor: pointer;
 }
 
 .entry-card {
     background: var(--bg-card);
-    border-radius: 1.8rem;
+    border-radius: 10px;
     padding: 1.4rem;
     margin-bottom: 1.2rem;
     border: 1px solid var(--border-card);
@@ -283,7 +283,7 @@ body {
     background: none;
     border: none;
     padding: 0.3rem 1rem;
-    border-radius: 2rem;
+    border-radius: 6px;
     cursor: pointer;
     font-weight: 500;
 }
@@ -313,7 +313,7 @@ input, select, textarea {
     width: 100%;
     padding: 0.8rem 1rem;
     border: 1.5px solid var(--border-input);
-    border-radius: 1.5rem;
+    border-radius: 6px;
     font-size: 0.95rem;
     background: var(--bg-search-input);
     color: var(--text-primary);
@@ -324,7 +324,7 @@ button[type="submit"] {
     color: white;
     border: none;
     padding: 0.8rem;
-    border-radius: 2rem;
+    border-radius: 6px;
     font-weight: bold;
     width: 100%;
     cursor: pointer;
@@ -343,7 +343,7 @@ button[type="submit"] {
     border: none;
     padding: 0.5rem 1.8rem;
     font-weight: 600;
-    border-radius: 2rem;
+    border-radius: 6px;
     cursor: pointer;
     color: var(--text-secondary);
 }
@@ -358,9 +358,10 @@ button[type="submit"] {
     margin-top: 1rem;
     color: var(--text-muted);
 }
+
 #userEmail {
     padding: 0.5rem 1.2rem;
-    border-radius: 10px;
+    border-radius: 6px;
     border: 1.5px solid #b45f2b;
     color: #5a3e2b;
     font-weight: 500;
