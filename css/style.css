@@ -155,7 +155,7 @@ body {
 
 .welcome-section {
     background: var(--bg-welcome);
-    border-radius: 2rem;
+    border-radius: 10p;
     padding: 1.5rem 2rem;
     margin-bottom: 2rem;
     display: flex;
@@ -357,4 +357,17 @@ button[type="submit"] {
     text-align: center;
     margin-top: 1rem;
     color: var(--text-muted);
+}
+#userEmail {
+    padding: 0.5rem 1.2rem;
+    border-radius: 10px;
+    border: 1.5px solid #b45f2b;
+    color: #5a3e2b;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+[data-theme="dark"] #userEmail {
+    border-color: #c97a40;
+    color: #c9a882;
 }
