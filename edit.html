@@ -2,28 +2,26 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chỉnh sửa nhật ký</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div class="container">
     <div class="header">
-        <div class="logo">✏️ Chỉnh sửa nhật ký</div>
+        <div class="logo">✏️ Chỉnh sửa</div>
         <div class="nav">
             <a href="index.html">🏠 Trang chủ</a>
-            <a href="add.html">➕ Thêm mới</a>
             <button id="logoutBtn">🚪 Đăng xuất</button>
         </div>
     </div>
     <form id="editForm">
         <div class="form-group">
-            <label>📅 Ngày (không thể sửa)</label>
-            <input type="text" id="editDate" readonly style="background:#f5f0ea;">
+            <label>📅 Ngày</label>
+            <input type="text" id="editDate" readonly>
         </div>
         <div class="form-group">
             <label>😊 Cảm xúc</label>
-            <select id="editEmotion" required>
+            <select id="editEmotion">
                 <option value="vui">😊 Vui vẻ</option>
                 <option value="buồn">😢 Buồn</option>
                 <option value="bình thường">😐 Bình thường</option>
@@ -40,56 +38,6 @@
         <div id="editMsg" class="message"></div>
     </form>
 </div>
-<script type="module">
-    import { requireAuth, getCurrentUser, logout } from "./js/auth.js";
-    import { updateDiary } from "./js/diary.js";
-    import { db } from "./js/firebase-config.js";
-    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    requireAuth();
-    document.getElementById("logoutBtn").onclick = logout;
-    const urlParams = new URLSearchParams(window.location.search);
-    const diaryId = urlParams.get("id");
-    if (!diaryId) {
-        alert("Không tìm thấy nhật ký!");
-        window.location.href = "index.html";
-    }
-    const editDate = document.getElementById("editDate");
-    const editEmotion = document.getElementById("editEmotion");
-    const editContent = document.getElementById("editContent");
-    const editMsg = document.getElementById("editMsg");
-    async function loadDiaryData() {
-        const user = await getCurrentUser();
-        if (!user) return;
-        const docRef = doc(db, "diaries", diaryId);
-        const docSnap = await getDoc(docRef);
-        if (!docSnap.exists() || docSnap.data().userId !== user.uid) {
-            alert("Bạn không có quyền sửa nhật ký này");
-            window.location.href = "index.html";
-            return;
-        }
-        const data = docSnap.data();
-        editDate.value = data.date;
-        editEmotion.value = data.emotion;
-        editContent.value = data.content;
-    }
-    loadDiaryData();
-    document.getElementById("editForm").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const newEmotion = editEmotion.value;
-        const newContent = editContent.value.trim();
-        if (!newContent) {
-            editMsg.innerText = "Nội dung không được để trống";
-            return;
-        }
-        try {
-            await updateDiary(diaryId, newEmotion, newContent);
-            editMsg.style.color = "green";
-            editMsg.innerText = "✅ Cập nhật thành công! Chuyển về trang chủ...";
-            setTimeout(() => { window.location.href = "index.html"; }, 1000);
-        } catch (err) {
-            editMsg.innerText = "Lỗi: " + err.message;
-        }
-    });
-</script>
+<script type="module" src="./js/edit.js"></script>
 </body>
 </html>
