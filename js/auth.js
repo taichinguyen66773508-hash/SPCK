@@ -1,16 +1,13 @@
-import { auth } from "./firebase-config.js";
+import { auth, db } from "./firebase-config.js";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Kiểm tra đăng nhập, nếu chưa thì chuyển về login
 export function requireAuth() {
     onAuthStateChanged(auth, (user) => {
-        if (!user) {
-            window.location.href = "login.html";
-        }
+        if (!user) window.location.href = "login.html";
     });
 }
 
-// Lấy user hiện tại (Promise)
 export function getCurrentUser() {
     return new Promise((resolve) => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -20,18 +17,42 @@ export function getCurrentUser() {
     });
 }
 
-// Đăng xuất
 export function logout() {
     signOut(auth);
     window.location.href = "login.html";
 }
 
-// Đăng nhập
 export async function login(email, password) {
-    return await signInWithEmailAndPassword(auth, email, password);
-}
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    
+    const name = user.email.split('@')[0];
+    const displayName = name.charAt(0).toUpperCase() + name.slice(1);
+    
+    const userRef = doc(db, "users", user.uid);
+    await setDoc(userRef, {
+        email: user.email,
+        uid: user.uid,
+        displayName: displayName,
+        lastLoginAt: new Date()
+    }, { merge: true });
 
-// Đăng ký
+    return userCredential;
+}
 export async function register(email, password) {
-    return await createUserWithEmailAndPassword(auth, email, password);
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    const name = user.email.split('@')[0];
+    const displayName = name.charAt(0).toUpperCase() + name.slice(1);
+
+    const userRef = doc(db, "users", user.uid);
+    await setDoc(userRef, {
+        email: user.email,
+        uid: user.uid,
+        displayName: displayName, 
+        createdAt: new Date()
+    });
+
+    return userCredential;
 }

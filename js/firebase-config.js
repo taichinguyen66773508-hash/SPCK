@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Thay bằng config thực tế từ Firebase Console của bạn
+// Thay bằng config thực tế của bạn
 const firebaseConfig = {
   apiKey: "AIzaSyCVJ2M0YqFRJAy1ufra085Pm2zwoqH9cuk",
   authDomain: "cuoijsi13.firebaseapp.com",
